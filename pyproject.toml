@@ -5,6 +5,5 @@ description = ""
 authors = ["Your Name <you@example.com>"]
 requires-python = ">=3.11"
 dependencies = [
-    "discord-py>=2.5.2",
-    "tlgbotfwk>=0.4.61",
+    "discord-py==2.5.2",
 ]

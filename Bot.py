@@ -33,24 +33,37 @@ def log_query(user: discord.abc.User, query: str, matched_keys: list[str]):
         "matched_keys": matched_keys
     }
     LOG_CACHE.append(log_entry)
-    if len(LOG_CACHE) >= 5:
-        if len(LOG_CACHE) > 100:
-            LOG_CACHE = LOG_CACHE[-100:]
-        LOG_FILE.write_text(json.dumps(LOG_CACHE, indent=2, ensure_ascii=False), encoding="utf-8")
+    
+    # Maintain reasonable cache size and write frequency
+    if len(LOG_CACHE) >= 10:  # Write more frequently
+        if len(LOG_CACHE) > 50:  # Keep smaller cache
+            LOG_CACHE = LOG_CACHE[-50:]
+        try:
+            LOG_FILE.write_text(json.dumps(LOG_CACHE, indent=2, ensure_ascii=False), encoding="utf-8")
+        except Exception as e:
+            print(f"⚠️ Log write error: {e}")
 
 def search_database(query: str) -> list[tuple[str, str]]:
     if not query or not DATABASE:
         return []
     q = query.lower().strip()
-    exact, prefix, contain = [], [], []
+    results = []
+    
+    # Single pass through database with priority scoring
     for k, v in DATABASE.items():
         kl = k.lower()
-        if kl == q: exact.append((k, v))
-        elif kl.startswith(q): prefix.append((k, v))
-        elif q in kl: contain.append((k, v))
-    if exact: return exact
-    if prefix: return prefix
-    if contain: return contain
+        if kl == q:
+            return [(k, v)]  # Exact match, return immediately
+        elif kl.startswith(q):
+            results.append((0, k, v))  # Priority 0 for prefix
+        elif q in kl:
+            results.append((1, k, v))  # Priority 1 for contains
+    
+    if results:
+        results.sort(key=lambda x: x[0])  # Sort by priority
+        return [(k, v) for _, k, v in results]
+    
+    # Only do fuzzy matching if no other matches found
     close = difflib.get_close_matches(q, DATABASE.keys(), n=3, cutoff=0.6)
     return [(k, DATABASE[k]) for k in close]
 

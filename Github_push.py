@@ -17,23 +17,31 @@ def git_push():
 
         auth_url = f"https://{GITHUB_ACTOR}:{GITHUB_TOKEN}@github.com/{REPO}.git"  
 
-        # 🧹 Bersihkan folder .git kalau rusak (prevent error 128)
-        if os.path.exists(".git"):
-            shutil.rmtree(".git")
-
-        subprocess.run(["git", "init"], check=True)  
-        subprocess.run(["git", "config", "user.name", "ReplitBot"], check=True)  
-        subprocess.run(["git", "config", "user.email", "bot@replit.com"], check=True)  
-        subprocess.run(["git", "remote", "remove", "origin"], check=False)  
-        subprocess.run(["git", "remote", "add", "origin", auth_url], check=True)
+        # 🔄 Initialize git only if needed
+        if not os.path.exists(".git"):
+            subprocess.run(["git", "init"], check=True)  
+            subprocess.run(["git", "config", "user.name", "ReplitBot"], check=True)  
+            subprocess.run(["git", "config", "user.email", "bot@replit.com"], check=True)
+        
+        # Update remote if exists, otherwise add it
+        result = subprocess.run(["git", "remote", "get-url", "origin"], capture_output=True, text=True)
+        if result.returncode == 0:
+            subprocess.run(["git", "remote", "set-url", "origin", auth_url], check=True)
+        else:
+            subprocess.run(["git", "remote", "add", "origin", auth_url], check=True)
 
         # 🔁 Pastikan branch sesuai
         subprocess.run(["git", "branch", "-M", BRANCH], check=True)
 
         subprocess.run(["git", "add", "."], check=True)  
         subprocess.run(["git", "commit", "-m", f"🔄 Auto-update: {datetime.now().isoformat()}"], check=False)  
-        subprocess.run(["git", "pull", "--rebase", "origin", BRANCH], check=False)  
-        subprocess.run(["git", "push", "--force", "origin", BRANCH], check=True)  
+        # Try normal push first, then pull and retry if needed
+        push_result = subprocess.run(["git", "push", "origin", BRANCH], capture_output=True)
+        if push_result.returncode != 0:
+            subprocess.run(["git", "pull", "--rebase", "origin", BRANCH], check=False)  
+            subprocess.run(["git", "push", "origin", BRANCH], check=True)
+        else:
+            print("🚀 Direct push successful")  
 
         print("✅ Push berhasil.")  
     except Exception as e:  
