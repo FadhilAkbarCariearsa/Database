@@ -1,5 +1,5 @@
 {
-  "Variabel": "Variabel adalah tempat menyimpan data. Penulisan variabel di Python tidak perlu tipe data. Contoh:\n\nx = 10\ny = 'Halo'\nz = 3.14\n\nVariabel dapat diubah nilainya kapan saja.",
+  "Variabel": "Variabel adalah tempatnya menyimpan data. Penulisan variabel di Python tidak perlu tipe data. Contoh:\n\nx = 10\ny = 'Halo'\nz = 3.14\n\nVariabel dapat diubah nilainya kapan saja.",
   "Integer": "Integer adalah tipe data bilangan bulat, misal: 1, -5, 100. Contoh:\n\nangka = 7\nprint(type(angka)) # Output: <class 'int'>",
   "Float": "Float adalah tipe data bilangan desimal. Contoh:\n\npi = 3.14\nprint(type(pi)) # Output: <class 'float'>",
   "String": "String adalah tipe data teks. Tulis di antara tanda kutip. Contoh:\n\nnama = 'Fadhil'\nprint(type(nama)) # Output: <class 'str'>",
